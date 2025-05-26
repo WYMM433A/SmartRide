@@ -33,9 +33,9 @@ namespace SmartRide.ViewModels
         public VehicleType? VehicleType { get; set; }
 
         [Display(Name = "Vehicle ID")]
-        public string VehicleId { get; set; }
+        public string? VehicleId { get; set; }
 
         [Display(Name = "License Number")]
-        public string LicenseNumber { get; set; }
+        public string? LicenseNumber { get; set; }
     }
 }

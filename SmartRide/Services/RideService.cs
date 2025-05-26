@@ -25,7 +25,13 @@ namespace SmartRide.Services
             _context = context;
         }
 
+        public async Task<RideRequest> GetRequestByIdAsync(int requestId)
+        {
+            return await _context.RideRequests.FirstOrDefaultAsync(r => r.RequestId == requestId);
+        }
+
         // CUSTOMER OPERATIONS
+
 
         public async Task<RideRequest> BookRideAsync(BookRideViewModel model, int customerId)
         {
