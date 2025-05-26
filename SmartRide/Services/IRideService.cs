@@ -5,6 +5,8 @@ namespace SmartRide.Services
 {
     public interface IRideService
     {
+
+        Task<RideRequest> GetRequestByIdAsync(int requestId);
         // Customer operations
         Task<RideRequest> BookRideAsync(BookRideViewModel model, int customerId);
         Task<bool> CancelRideAsync(int requestId, int customerId);

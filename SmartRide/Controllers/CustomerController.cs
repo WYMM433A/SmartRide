@@ -172,26 +172,54 @@ namespace SmartRide.Controllers
 
             try
             {
-                var ride = await _rideService.GetRideByRequestIdAsync(requestId);
-                if (ride == null)
+                // First, get the RideRequest to ensure it exists and belongs to this customer
+                var request = await _rideService.GetRequestByIdAsync(requestId);
+                if (request == null || request.CustomerId != customerId.Value)
                 {
-                    TempData["Error"] = "Ride not found";
+                    TempData["Error"] = "Ride request not found";
                     return RedirectToAction("Dashboard");
                 }
 
-                var viewModel = new TrackRideViewModel
-                {
-                    Ride = ride,
-                    DriverName = ride.Driver?.Name ?? "Searching...",
-                    DriverPhone = ride.Driver?.Phone ?? "N/A",
-                    VehicleInfo = ride.Driver != null ?
-                        $"{ride.Driver.VehicleType} - {ride.Driver.VehicleId}" : "N/A",
-                    CurrentStatus = GetStatusText(ride.Status),
-                    EstimatedArrival = ride.Status == RideStatus.Assigned ?
-                        DateTime.Now.AddMinutes(10).ToString("HH:mm") : "N/A"
-                };
+                // Check if ride has been created (driver accepted)
+                var ride = await _rideService.GetRideByRequestIdAsync(requestId);
 
-                return View(viewModel);
+                if (ride != null)
+                {
+                    // Driver has accepted - show ride tracking
+                    var viewModel = new TrackRideViewModel
+                    {
+                        Ride = ride,
+                        DriverName = ride.Driver?.Name ?? "Driver Assigned",
+                        DriverPhone = ride.Driver?.Phone ?? "N/A",
+                        VehicleInfo = ride.Driver != null ?
+                            $"{ride.Driver.VehicleType} - {ride.Driver.VehicleId}" : "N/A",
+                        CurrentStatus = GetStatusText(ride.Status),
+                        EstimatedArrival = ride.Status == RideStatus.Assigned ?
+                            DateTime.Now.AddMinutes(10).ToString("HH:mm") : "N/A"
+                    };
+                    return View(viewModel);
+                }
+                else
+                {
+                    // No driver yet - show searching state
+                    var searchingViewModel = new TrackRideViewModel
+                    {
+                        Ride = new Ride
+                        {
+                            RequestId = request.RequestId,
+                            PickupLocation = request.PickupLocation,
+                            DropoffLocation = request.DropoffLocation,
+                            Fare = request.EstimatedFare,
+                            Distance = 0 // Will be calculated when driver accepts
+                        },
+                        DriverName = "Searching...",
+                        DriverPhone = "N/A",
+                        VehicleInfo = "N/A",
+                        CurrentStatus = "Searching for available drivers",
+                        EstimatedArrival = "N/A"
+                    };
+                    return View(searchingViewModel);
+                }
             }
             catch (Exception ex)
             {

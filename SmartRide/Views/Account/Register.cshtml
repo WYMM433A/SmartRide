@@ -1,19 +1,45 @@
-﻿@model LoginViewModel
+﻿@model RegisterViewModel
 @{
-    ViewBag.Title = "Login - SmartRide";
+    ViewBag.Title = "Register - SmartRide";
 }
 
-<div class="container mt-5">
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <h4>Validation Errors:</h4>
+        @foreach (var modelError in ViewData.ModelState)
+        {
+            if (modelError.Value.Errors.Any())
+            {
+                <p><strong>@modelError.Key:</strong></p>
+                <ul>
+                    @foreach (var error in modelError.Value.Errors)
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            }
+        }
+    </div>
+}
+
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h3 class="text-center mb-0">Welcome Back</h3>
-                    <p class="text-center mb-0">Login to SmartRide</p>
+                    <h3 class="text-center mb-0">Join SmartRide</h3>
                 </div>
                 <div class="card-body">
-                    <form asp-action="Login" method="post">
+                    <form asp-action="Register" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <!-- Basic Information -->
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" placeholder="Enter your full name" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
 
                         <div class="mb-3">
                             <label asp-for="Email" class="form-label"></label>
@@ -22,29 +48,98 @@
                         </div>
 
                         <div class="mb-3">
+                            <label asp-for="Phone" class="form-label"></label>
+                            <input asp-for="Phone" class="form-control" placeholder="Enter your phone number" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
                             <label asp-for="Password" class="form-label"></label>
                             <input asp-for="Password" class="form-control" placeholder="Enter your password" />
                             <span asp-validation-for="Password" class="text-danger"></span>
                         </div>
 
+                        <!-- User Type Selection -->
+                        <div class="mb-3">
+                            <label asp-for="UserType" class="form-label"></label>
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" asp-for="UserType" value="1" id="customer" />
+                                    <label class="form-check-label" for="customer">
+                                        🛒 Customer - I want to book rides
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" asp-for="UserType" value="2" id="driver" />
+                                    <label class="form-check-label" for="driver">
+                                        🚗 Driver - I want to offer rides
+                                    </label>
+                                </div>
+                            </div>
+                            <span asp-validation-for="UserType" class="text-danger"></span>
+                        </div>
+
+                        <!-- Driver-specific fields (hidden by default) -->
+                        <div id="driverFields" style="display: none;">
+                            <hr>
+                            <h5>Driver Information</h5>
+
+                            <div class="mb-3">
+                                <label asp-for="VehicleType" class="form-label"></label>
+                                <select asp-for="VehicleType" class="form-control">
+                                    <option value="">Select vehicle type</option>
+                                    <option value="1">🚗 Car</option>
+                                    <option value="2">🏍️ Motorbike</option>
+                                </select>
+                                <span asp-validation-for="VehicleType" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="VehicleId" class="form-label"></label>
+                                <input asp-for="VehicleId" class="form-control" placeholder="Enter vehicle ID/plate number" />
+                                <span asp-validation-for="VehicleId" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="LicenseNumber" class="form-label"></label>
+                                <input asp-for="LicenseNumber" class="form-control" placeholder="Enter driver license number" />
+                                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Login</button>
+                            <button type="submit" class="btn btn-primary">Register</button>
                         </div>
                     </form>
 
                     <div class="text-center mt-3">
-                        <p>New to SmartRide? <a asp-action="Register">Register here</a></p>
-                    </div>
-
-                    <div class="mt-4 p-3 bg-light rounded">
-                        <h6>Demo Accounts:</h6>
-                        <small class="text-muted">
-                            <strong>Customer:</strong> customer@demo.com / password123<br>
-                            <strong>Driver:</strong> mike@demo.com / password123
-                        </small>
+                        <p>Already have an account? <a asp-action="Login">Login here</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Show/hide driver fields based on user type selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const customerRadio = document.getElementById('customer');
+        const driverRadio = document.getElementById('driver');
+        const driverFields = document.getElementById('driverFields');
+
+        function toggleDriverFields() {
+            if (driverRadio.checked) {
+                driverFields.style.display = 'block';
+            } else {
+                driverFields.style.display = 'none';
+            }
+        }
+
+        customerRadio.addEventListener('change', toggleDriverFields);
+        driverRadio.addEventListener('change', toggleDriverFields);
+
+        // Initial check
+        toggleDriverFields();
+    });
+</script>
