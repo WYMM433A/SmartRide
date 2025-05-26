@@ -1,0 +1,123 @@
+﻿@model SmartRide.Models.Ride
+@{
+    ViewBag.Title = "Current Ride - SmartRide";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">🚗 Current Ride</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Customer Info -->
+                    <div class="alert alert-info">
+                        <h5>👤 Customer Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Name:</strong> @Model.Customer.Name</p>
+                                <p><strong>Phone:</strong> @Model.Customer.Phone</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Email:</strong> @Model.Customer.Email</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trip Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>📍 Trip Details</h6>
+                                    <p><strong>Pickup:</strong> @Model.PickupLocation</p>
+                                    <p><strong>Drop-off:</strong> @Model.DropoffLocation</p>
+                                    <p><strong>Distance:</strong> @Model.Distance.ToString("F1") km</p>
+                                    <p><strong>Fare:</strong> $@Model.Fare.ToString("F2")</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6>⏰ Time Information</h6>
+                                    @if (Model.StartTime.HasValue)
+                                    {
+                                        <p><strong>Started:</strong> @Model.StartTime.Value.ToString("HH:mm")</p>
+                                        @if (Model.Status == SmartRide.Models.RideStatus.InProgress)
+                                        {
+                                            <p><strong>Duration:</strong> @((DateTime.Now - Model.StartTime.Value).TotalMinutes.ToString("F0")) minutes</p>
+                                        }
+                                    }
+                                    <p>
+                                        <strong>Status:</strong>
+                                        @if (Model.Status == SmartRide.Models.RideStatus.Assigned)
+                                        {
+                                            <span class="badge bg-warning">🟡 Going to pickup</span>
+                                        }
+                                        else if (Model.Status == SmartRide.Models.RideStatus.InProgress)
+                                        {
+                                            <span class="badge bg-success">🟢 In progress</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center">
+                        @if (Model.Status == SmartRide.Models.RideStatus.Assigned)
+                        {
+                            <div class="alert alert-warning">
+                                <h5>📍 Navigate to Pickup Location</h5>
+                                <p class="mb-0">Go to: <strong>@Model.PickupLocation</strong></p>
+                                <small class="text-muted">Once you arrive and the customer gets in, click "Start Ride"</small>
+                            </div>
+                            <form asp-action="StartRide" method="post" class="d-inline">
+                                <input type="hidden" name="rideId" value="@Model.RideId" />
+                                <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('Confirm that customer is in the vehicle?')">
+                                    🚀 Start Ride
+                                </button>
+                            </form>
+                        }
+                        else if (Model.Status == SmartRide.Models.RideStatus.InProgress)
+                        {
+                            <div class="alert alert-info">
+                                <h5>🎯 Navigate to Destination</h5>
+                                <p class="mb-0">Go to: <strong>@Model.DropoffLocation</strong></p>
+                                <small class="text-muted">Once you arrive at the destination, click "Complete Ride"</small>
+                            </div>
+                            <form asp-action="CompleteRide" method="post" class="d-inline">
+                                <input type="hidden" name="rideId" value="@Model.RideId" />
+                                <button type="submit" class="btn btn-primary btn-lg" onclick="return confirm('Confirm that customer has reached destination?')">
+                                    ✅ Complete Ride
+                                </button>
+                            </form>
+                        }
+
+                        <div class="mt-3">
+                            <a asp-action="Dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Contact Info -->
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <small class="text-muted">
+                        <strong>SmartRide Support:</strong> 1-800-SMART-RIDE | Emergency: 911
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

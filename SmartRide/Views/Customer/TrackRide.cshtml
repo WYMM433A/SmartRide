@@ -1,0 +1,277 @@
+﻿@model SmartRide.ViewModels.TrackRideViewModel
+@{
+    ViewData["Title"] = "Track Your Ride";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-location-arrow"></i> Track Your Ride</h2>
+                <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Ride Details -->
+        <div class="col-lg-8 col-md-12">
+            <!-- Current Status Card -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> Ride Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="text-center">
+                                @if (Model.Ride.Status == SmartRide.Models.RideStatus.Assigned)
+                                {
+                                    <span class="badge badge-warning badge-lg p-3">
+                                        <i class="fas fa-clock"></i> @Model.CurrentStatus
+                                    </span>
+                                }
+                                else if (Model.Ride.Status == SmartRide.Models.RideStatus.InProgress)
+                                {
+                                    <span class="badge badge-success badge-lg p-3">
+                                        <i class="fas fa-car"></i> @Model.CurrentStatus
+                                    </span>
+                                }
+                                else if (Model.Ride.Status == SmartRide.Models.RideStatus.Completed)
+                                {
+                                    <span class="badge badge-primary badge-lg p-3">
+                                        <i class="fas fa-check-circle"></i> @Model.CurrentStatus
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary badge-lg p-3">
+                                        <i class="fas fa-question-circle"></i> @Model.CurrentStatus
+                                    </span>
+                                }
+                            </h4>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            @if (Model.EstimatedArrival != "N/A")
+                            {
+                                <h6 class="text-muted">Estimated Arrival</h6>
+                                <h4 class="text-success">@Model.EstimatedArrival</h4>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Route Information -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-route"></i> Route Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-success rounded-circle p-2 mr-3">
+                                    <i class="fas fa-map-marker-alt text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Pickup Location</small>
+                                    <h6 class="mb-0">@Model.Ride.PickupLocation</h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-danger rounded-circle p-2 mr-3">
+                                    <i class="fas fa-flag-checkered text-white"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Destination</small>
+                                    <h6 class="mb-0">@Model.Ride.DropoffLocation</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <small class="text-muted">Distance</small>
+                            <p class="h6">@Model.Ride.Distance km</p>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Fare</small>
+                            <p class="h6 text-success">$@Model.Ride.Fare</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Placeholder -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-map"></i> Live Tracking</h5>
+                </div>
+                <div class="card-body">
+                    <div class="bg-light text-center p-5 rounded" style="min-height: 300px;">
+                        <i class="fas fa-map fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Map Integration Coming Soon</h5>
+                        <p class="text-muted">Real-time driver location and route will be displayed here</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Driver Info & Actions -->
+        <div class="col-lg-4 col-md-12">
+            <!-- Driver Information -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Driver Information</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.DriverName != "Searching...")
+                    {
+                        <div class="mb-3">
+                            <div class="bg-secondary rounded-circle mx-auto mb-3" style="width: 80px; height: 80px; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                            <h5 class="mb-1">@Model.DriverName</h5>
+                            <p class="text-muted mb-2">@Model.VehicleInfo</p>
+
+                            @if (Model.DriverPhone != "N/A")
+                            {
+                                <div class="mb-3">
+                                    <a href="tel:@Model.DriverPhone" class="btn btn-success btn-sm">
+                                        <i class="fas fa-phone"></i> Call Driver
+                                    </a>
+                                </div>
+                                <small class="text-muted">@Model.DriverPhone</small>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                            <h6 class="text-muted">Searching for available driver...</h6>
+                            <p class="text-muted small">Please wait while we find the best driver for you</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Ride Details -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-receipt"></i> Ride Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <small class="text-muted">Ride ID</small>
+                        </div>
+                        <div class="col-6 text-right">
+                            <strong>#@Model.Ride.RideId</strong>
+                        </div>
+                    </div>
+
+                    @if (Model.Ride.StartTime.HasValue)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">Start Time</small>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>@Model.Ride.StartTime.Value.ToString("HH:mm")</strong>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Ride.EndTime.HasValue)
+                    {
+                        <div class="row mb-2">
+                            <div class="col-6">
+                                <small class="text-muted">End Time</small>
+                            </div>
+                            <div class="col-6 text-right">
+                                <strong>@Model.Ride.EndTime.Value.ToString("HH:mm")</strong>
+                            </div>
+                        </div>
+                    }
+
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">
+                            <strong>Total Fare</strong>
+                        </div>
+                        <div class="col-6 text-right">
+                            <strong class="text-success">$@Model.Ride.Fare</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    @if (Model.Ride.Status == SmartRide.Models.RideStatus.Assigned)
+                    {
+                        <form asp-action="CancelRide" asp-controller="Customer" method="post" class="mb-2">
+                            <input type="hidden" name="requestId" value="@Model.Ride.RequestId" />
+                            <button type="submit" class="btn btn-danger btn-block"
+                                    onclick="return confirm('Are you sure you want to cancel this ride?')">
+                                <i class="fas fa-times"></i> Cancel Ride
+                            </button>
+                        </form>
+                    }
+
+                    <button type="button" class="btn btn-outline-primary btn-block"
+                            onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
+
+                    @if (Model.Ride.Status == SmartRide.Models.RideStatus.Completed)
+                    {
+                        <a href="@Url.Action("Dashboard", "Customer")" class="btn btn-success btn-block mt-2">
+                            <i class="fas fa-star"></i> Rate Your Ride
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .badge-lg {
+        font-size: 1.1em;
+        padding: 0.75rem 1rem;
+    }
+
+    .card {
+        border: none;
+        border-radius: 10px;
+    }
+
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+
+    .spinner-border {
+        width: 2rem;
+        height: 2rem;
+    }
+</style>
+
+<script>
+    // Auto-refresh page every 30 seconds for live updates
+    setTimeout(function() {
+        if (@(Model.Ride.Status != SmartRide.Models.RideStatus.Completed ? "true" : "false")) {
+            location.reload();
+        }
+    }, 30000);
+</script>

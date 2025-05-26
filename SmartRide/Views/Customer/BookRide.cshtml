@@ -1,0 +1,173 @@
+﻿@model BookRideViewModel
+@{
+    ViewBag.Title = "Book a Ride - SmartRide";
+}
+
+
+@if (ViewBag.Debug != null)
+{
+    <div class="container">
+        <div class="alert alert-warning">
+            <h6>🐛 Debug Info:</h6>
+            <small>@ViewBag.Debug</small>
+        </div>
+    </div>
+}
+
+@if (ViewBag.DetailedError != null)
+{
+    <div class="container">
+        <div class="alert alert-danger">
+            <h6>❌ Detailed Error:</h6>
+            <pre style="font-size: 12px; white-space: pre-wrap;">@ViewBag.DetailedError</pre>
+        </div>
+    </div>
+}
+
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">🚗 Book Your Ride</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="BookRide" method="post" id="bookRideForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="PickupLocation" class="form-label">Pickup Location</label>
+                                    <select asp-for="PickupLocation" id="PickupLocation" class="form-control" onchange="calculateFare()">
+                                        <option value="">Select pickup location</option>
+                                        @foreach (var location in Model.AvailableLocations)
+                                        {
+                                            <option value="@location">📍 @location</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="PickupLocation" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="DropoffLocation" class="form-label">Drop-off Location</label>
+                                    <select asp-for="DropoffLocation" id="DropoffLocation" class="form-control" onchange="calculateFare()">
+                                        <option value="">Select drop-off location</option>
+                                        @foreach (var location in Model.AvailableLocations)
+                                        {
+                                            <option value="@location">📍 @location</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="DropoffLocation" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="VehicleType" class="form-label">Vehicle Type</label>
+                                    <select asp-for="VehicleType" id="VehicleType" class="form-control" onchange="calculateFare()">
+                                        <option value="">Select vehicle type</option>
+                                        <option value="1">🚗 Car - Comfortable ride</option>
+                                        <option value="2">🏍️ Motorbike - Quick &amp; economical</option>
+                                    </select>
+                                    <span asp-validation-for="VehicleType" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="PaymentMethod" class="form-label">Payment Method</label>
+                                    <select asp-for="PaymentMethod" id="PaymentMethod" class="form-control">
+                                        <option value="">Select payment method</option>
+                                        <option value="1">💵 Cash</option>
+                                        <option value="2">💳 Credit Card</option>
+                                        <option value="3">💳 Debit Card</option>
+                                        <option value="4">📱 Digital Wallet</option>
+                                    </select>
+                                    <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fare Estimation -->
+                        <div class="mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5>💰 Fare Estimation</h5>
+                                    <div id="fareDisplay">
+                                        <p class="text-muted">Select pickup, drop-off, and vehicle type to see estimated fare</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg" id="bookBtn" disabled>
+                                🚗 Book My Ride
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a asp-action="Dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Demo distance data (in km from city center)
+    const locations = {
+        'City Center': 0,
+        'Airport': 15.5,
+        'University': 8.2,
+        'Shopping Mall': 5.7,
+        'Hospital': 12.3
+    };
+
+    function calculateFare() {
+        const pickupSelect = document.getElementById('PickupLocation');
+        const dropoffSelect = document.getElementById('DropoffLocation');
+        const vehicleSelect = document.getElementById('VehicleType');
+        const fareDisplay = document.getElementById('fareDisplay');
+        const bookBtn = document.getElementById('bookBtn');
+
+        const pickup = pickupSelect.value;
+        const dropoff = dropoffSelect.value;
+        const vehicleType = vehicleSelect.value;
+
+        if (pickup && dropoff && vehicleType && pickup !== dropoff) {
+            const distance = Math.abs(locations[pickup] - locations[dropoff]);
+            const baseRate = vehicleType === '1' ? 2.5 : 1.8; // Car vs Motorbike
+            const fare = (distance * baseRate + 3.0).toFixed(2);
+
+            fareDisplay.innerHTML = `
+                <div class="row">
+                    <div class="col-sm-6"><strong>Distance:</strong> ${distance.toFixed(1)} km</div>
+                    <div class="col-sm-6"><strong>Estimated Fare:</strong> $${fare}</div>
+                </div>
+                <small class="text-muted">Base fare: $3.00 + Distance rate</small>
+            `;
+            bookBtn.disabled = false;
+            bookBtn.innerHTML = `🚗 Book Ride for $${fare}`;
+        } else if (pickup === dropoff && pickup !== '') {
+            fareDisplay.innerHTML = '<p class="text-warning">Pickup and drop-off locations cannot be the same</p>';
+            bookBtn.disabled = true;
+            bookBtn.innerHTML = '🚗 Book My Ride';
+        } else {
+            fareDisplay.innerHTML = '<p class="text-muted">Select pickup, drop-off, and vehicle type to see estimated fare</p>';
+            bookBtn.disabled = true;
+            bookBtn.innerHTML = '🚗 Book My Ride';
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateFare();
+    });
+</script>

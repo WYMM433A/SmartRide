@@ -1,0 +1,87 @@
+﻿@model SearchingDriverViewModel
+@{
+    ViewBag.Title = "Finding Your Driver - SmartRide";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <div class="searching-animation mb-4">
+                        <div class="spinner-grow text-primary" role="status">
+                            <span class="visually-hidden">Searching...</span>
+                        </div>
+                    </div>
+
+                    <h3>Finding Your Driver</h3>
+                    <p class="text-muted mb-4">Please wait while we connect you with a nearby driver</p>
+
+                    <div class="ride-details bg-light p-4 rounded mb-4">
+                        <div class="row">
+                            <div class="col-md-6 text-start">
+                                <p><strong>From:</strong> @Model.Request.PickupLocation</p>
+                                <p><strong>To:</strong> @Model.Request.DropoffLocation</p>
+                            </div>
+                            <div class="col-md-6 text-start">
+                                <p><strong>Vehicle:</strong> @Model.Request.VehicleType</p>
+                                <p><strong>Fare:</strong> $@Model.Request.EstimatedFare.ToString("F2")</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="searchStatus">
+                        <p class="searching-text">
+                            Searching for available @Model.Request.VehicleType drivers near @Model.Request.PickupLocation...
+                        </p>
+                        <small class="text-muted">This page will automatically update</small>
+                    </div>
+
+                    <form asp-action="CancelRide" method="post" class="mt-4">
+                        <input type="hidden" name="requestId" value="@Model.Request.RequestId" />
+                        <button type="submit" class="btn btn-danger"
+                                onclick="return confirm('Are you sure you want to cancel this ride request?')">
+                            Cancel Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function checkDriverStatus() {
+            fetch('/Customer/CheckDriverAssigned?requestId=@Model.Request.RequestId')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.isAssigned) {
+                        window.location.href = '/Customer/TrackRide?requestId=@Model.Request.RequestId';
+                    }
+                });
+        }
+
+        // Check every 5 seconds
+        setInterval(checkDriverStatus, @(Model.RefreshInterval * 1000));
+    </script>
+}
+
+<style>
+    .searching-animation {
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .spinner-grow {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .searching-text {
+        font-size: 1.1rem;
+        color: #666;
+    }
+</style>

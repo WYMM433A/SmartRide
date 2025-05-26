@@ -1,0 +1,101 @@
+﻿<!-- Views/Customer/Dashboard.cshtml -->
+@model CustomerDashboardViewModel
+@{
+    ViewBag.Title = "Customer Dashboard - SmartRide";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Welcome, @(Model?.Customer?.Name ?? "Customer")! 👋</h2>
+            <p class="text-muted">Your ride-sharing dashboard</p>
+        </div>
+    </div>
+
+    <!-- Active Ride/Request Section -->
+    @if (Model?.CurrentRequest != null)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5>🔍 Current Ride Request</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>From:</strong> @Model.CurrentRequest.PickupLocation</p>
+                            <p><strong>To:</strong> @Model.CurrentRequest.DropoffLocation</p>
+                            <p><strong>Vehicle:</strong> @Model.CurrentRequest.VehicleType</p>
+                            <p><strong>Status:</strong> <span class="badge bg-warning">@Model.CurrentRequest.Status</span></p>
+                            <p><strong>Estimated Fare:</strong> $@Model.CurrentRequest.EstimatedFare.ToString("F2")</p>
+                        </div>
+                        <div class="col-md-4">
+                            @if (Model.CurrentRequest.Status == SmartRide.Models.RequestStatus.Pending)
+                            {
+                                <p class="text-warning">🔍 Searching for drivers...</p>
+                                <form asp-controller="Customer" asp-action="CancelRide" method="post" class="d-inline">
+                                    <input type="hidden" name="requestId" value="@Model.CurrentRequest.RequestId" />
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to cancel this ride?')">Cancel Request</button>
+                                </form>
+                            }
+                            else if (Model.CurrentRequest.Status == SmartRide.Models.RequestStatus.Accepted)
+                            {
+                                <a asp-action="TrackRide" asp-route-requestId="@Model.CurrentRequest.RequestId" class="btn btn-primary">📍 Track Ride</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model?.ActiveRide != null)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-success">
+                    <h5>🚗 Active Ride</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>Driver:</strong> @(Model.ActiveRide.Driver?.Name ?? "Unknown")</p>
+                            <p><strong>Phone:</strong> @(Model.ActiveRide.Driver?.Phone ?? "N/A")</p>
+                            <p><strong>Vehicle:</strong> @(Model.ActiveRide.Driver?.VehicleType.ToString() ?? "N/A") - @(Model.ActiveRide.Driver?.VehicleId ?? "N/A")</p>
+                            <p><strong>Status:</strong> <span class="badge bg-success">@Model.ActiveRide.Status</span></p>
+                            <p><strong>Route:</strong> @Model.ActiveRide.PickupLocation → @Model.ActiveRide.DropoffLocation</p>
+                        </div>
+                        <div class="col-md-4">
+                            <a asp-action="TrackRide" asp-route-requestId="@Model.ActiveRide.RequestId" class="btn btn-primary">📍 View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">🚗 Book a New Ride</h5>
+                    <p class="card-text">Get a ride to your destination quickly and safely</p>
+                    @if (Model?.CurrentRequest == null && Model?.ActiveRide == null)
+                    {
+                        <a asp-action="BookRide" class="btn btn-primary btn-lg">Book Ride Now</a>
+                    }
+                    else
+                    {
+                        <button class="btn btn-secondary" disabled>Complete current ride first</button>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">📜 Ride History</h5>
+                    <p class="card-text">View your past rides and receipts</p>
+                    <a asp-action="RideHistory" class="btn btn-outline-primary">View History</a>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+</div>

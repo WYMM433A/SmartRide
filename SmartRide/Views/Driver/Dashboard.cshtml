@@ -1,0 +1,190 @@
+﻿<!-- Views/Driver/Dashboard.cshtml -->
+@model DriverDashboardViewModel
+@{
+    ViewBag.Title = "Driver Dashboard - SmartRide";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>Driver Dashboard - @(Model?.Driver?.Name ?? "Driver") 🚗</h2>
+        </div>
+    </div>
+
+    <!-- Driver Status -->
+    <div class="row mt-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5>
+                                Status:
+                                @if (Model?.Driver?.Status == SmartRide.Models.DriverStatus.Online)
+                                {
+                                    <span class="badge bg-success fs-6">🟢 Online</span>
+                                }
+                                else if (Model?.Driver?.Status == SmartRide.Models.DriverStatus.Busy)
+                                {
+                                    <span class="badge bg-warning fs-6">🟡 Busy</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary fs-6">🔴 Offline</span>
+                                }
+                            </h5>
+                            <p><strong>Vehicle:</strong> @(Model?.Driver?.VehicleType.ToString() ?? "N/A") - @(Model?.Driver?.VehicleId ?? "N/A")</p>
+                            <p><strong>License:</strong> @(Model?.Driver?.LicenseNumber ?? "N/A")</p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            @if (Model?.Driver?.Status == SmartRide.Models.DriverStatus.Offline)
+                            {
+                                <form asp-action="GoOnline" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-success btn-lg">Go Online</button>
+                                </form>
+                            }
+                            else if (Model?.Driver?.Status == SmartRide.Models.DriverStatus.Online)
+                            {
+                                <form asp-action="GoOffline" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-secondary">Go Offline</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Ride -->
+    @if (Model?.CurrentRide != null)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-primary">
+                    <h5>🚗 Current Ride</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <p><strong>Customer:</strong> @(Model.CurrentRide.Customer?.Name ?? "Unknown") (@(Model.CurrentRide.Customer?.Phone ?? "N/A"))</p>
+                            <p><strong>Route:</strong> @Model.CurrentRide.PickupLocation → @Model.CurrentRide.DropoffLocation</p>
+                            <p><strong>Status:</strong> @Model.CurrentRide.Status</p>
+                            <p><strong>Fare:</strong> $@Model.CurrentRide.Fare.ToString("F2")</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a asp-action="CurrentRide" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Available Ride Requests -->
+    @if (Model?.PendingRequests != null && Model.PendingRequests.Any() && Model?.Driver?.Status == SmartRide.Models.DriverStatus.Online)
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <h4>📋 Available Ride Requests</h4>
+                @foreach (var request in Model.PendingRequests)
+                {
+                    <div class="card mb-2">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6>👤 @(request.Customer?.Name ?? "Unknown Customer")</h6>
+                                    <p><strong>Route:</strong> @request.PickupLocation → @request.DropoffLocation</p>
+                                    <p><strong>Fare:</strong> $@request.EstimatedFare.ToString("F2") | <strong>Requested:</strong> @request.RequestTime.ToString("HH:mm")</p>
+                                    <p><strong>Payment:</strong> @request.PaymentMethod</p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <form asp-action="AcceptRide" method="post" class="d-inline">
+                                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                                        <button type="submit" class="btn btn-success btn-sm">✅ Accept</button>
+                                    </form>
+                                    <form asp-action="RejectRide" method="post" class="d-inline">
+                                        <input type="hidden" name="requestId" value="@request.RequestId" />
+                                        <button type="submit" class="btn btn-outline-secondary btn-sm">❌ Reject</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else if (Model?.Driver?.Status == SmartRide.Models.DriverStatus.Online && (Model?.PendingRequests == null || !Model.PendingRequests.Any()))
+    {
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <h5>🔍 Looking for ride requests...</h5>
+                    <p>You're online and ready to accept rides. New requests will appear here.</p>
+                    <small class="text-muted">This page auto-refreshes every 15 seconds</small>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Today's Summary -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                    <h5>💰 Today's Earnings</h5>
+                    <h2 class="text-success">$@(Model?.TodayEarnings.ToString("F2") ?? "0.00")</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-light h-100">
+                <div class="card-body text-center">
+                    <h5>🚗 Today's Rides</h5>
+                    <h2 class="text-primary">@(Model?.TodayRides ?? 0)</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Rides -->
+    @if (Model?.RecentRides != null && Model.RecentRides.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-12">
+                <h4>Recent Rides</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Route</th>
+                                <th>Fare</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var ride in Model.RecentRides)
+                            {
+                                <tr>
+                                    <td>@(ride.EndTime?.ToString("MM/dd/yyyy HH:mm") ?? "N/A")</td>
+                                    <td>@(ride.Customer?.Name ?? "Unknown")</td>
+                                    <td>@ride.PickupLocation → @ride.DropoffLocation</td>
+                                    <td>$@ride.Fare.ToString("F2")</td>
+                                    <td><span class="badge bg-success">@ride.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Auto-refresh every 15 seconds for new requests -->
+<script>
+    setTimeout(function() {
+        location.reload();
+    }, 15000);
+</script>

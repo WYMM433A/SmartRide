@@ -1,0 +1,84 @@
+﻿@model LoginViewModel
+@{
+    ViewBag.Title = "Login - SmartRide";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center mb-0">Welcome Back</h3>
+                    <p class="text-center mb-0">Login to SmartRide</p>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Login" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="Enter your email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" placeholder="Enter your password" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <p>New to SmartRide? <a asp-action="Register">Register here</a></p>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded">
+                        <h6>🎯 Demo Accounts:</h6>
+                        <small class="text-muted">
+                            <strong>Customer:</strong> customer@demo.com / password123<br>
+                            <strong>Driver (Car):</strong> mike@demo.com / password123<br>
+                            <strong>Driver (Bike):</strong> sarah@demo.com / password123
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Login Buttons for Demo -->
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">⚡ Quick Demo Login</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="fillLogin('customer@demo.com', 'password123')">
+                            👤 Login as Customer
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="fillLogin('mike@demo.com', 'password123')">
+                            🚗 Login as Car Driver
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="fillLogin('sarah@demo.com', 'password123')">
+                            🏍️ Login as Bike Driver
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function fillLogin(email, password) {
+        document.querySelector('input[name="Email"]').value = email;
+        document.querySelector('input[name="Password"]').value = password;
+    }
+</script>

@@ -1,0 +1,107 @@
+﻿@model List<SmartRide.Models.Ride>
+@{
+    ViewBag.Title = "Your Ride History - SmartRide";
+}
+
+<div class="container mt-4">
+    <div class="row align-items-center mb-4">
+        <div class="col">
+            <h2><i class="fas fa-history"></i> Your Ride History</h2>
+            <p class="text-muted mb-0">View all your completed rides</p>
+        </div>
+        <div class="col-auto">
+            <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    @if (Model?.Any() == true)
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Route</th>
+                            <th>Driver</th>
+                            <th>Trip Details</th>
+                            <th>Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ride in Model)
+                        {
+                            <tr>
+                                <td style="min-width: 120px;">
+                                    <div>@ride.StartTime?.ToString("MMM dd, yyyy")</div>
+                                    <small class="text-muted">
+                                        @ride.StartTime?.ToString("HH:mm") - @ride.EndTime?.ToString("HH:mm")
+                                    </small>
+                                </td>
+                                <td style="min-width: 200px;">
+                                    <div class="mb-1">
+                                        <i class="fas fa-map-marker-alt text-danger"></i>
+                                        @ride.PickupLocation
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-map-marker text-success"></i>
+                                        @ride.DropoffLocation
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>@(ride.Driver?.Name ?? "Unknown")</div>
+                                    @if (ride.Driver != null)
+                                    {
+                                        <small class="text-muted">
+                                            @ride.Driver.VehicleType - @ride.Driver.VehicleId
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div>Distance: @ride.Distance.ToString("F1") km</div>
+                                    <div>
+                                        Duration: @(ride.EndTime.HasValue && ride.StartTime.HasValue ?
+                                                                        (ride.EndTime.Value - ride.StartTime.Value).ToString(@"hh\:mm") : "N/A")
+                            </div>
+                        </td>
+                        <td style="min-width: 100px;">
+                            <div class="fw-bold">$@ride.Fare.ToString("F2")</div>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </span>
+                        </td>
+                    </tr>
+                                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center my-5">
+            <div class="mb-4">
+                <i class="fas fa-car fa-4x text-muted"></i>
+            </div>
+            <h4>No ride history yet</h4>
+            <p class="text-muted">Take your first ride to start building your history</p>
+            <a asp-action="BookRide" class="btn btn-primary mt-3">
+                <i class="fas fa-plus"></i> Book a Ride
+            </a>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <style>
+        .table td {
+            vertical-align: middle;
+        }
+
+        .table th {
+            font-weight: 500;
+        }
+    </style>
+}
